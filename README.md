@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Half Marathon Training Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Stone & Muted Teal -->
+    <!-- Application Structure Plan: A single-page dashboard structure was chosen for its clarity and ease of use. It starts with a high-level visual summary (weekly mileage chart and key stats cards) to give an immediate sense of the training load and progression. Below this, an interactive, tab-based weekly detail view allows the user to drill down into specific workouts without being overwhelmed by a long list. This "overview first, then details on demand" approach transforms the static text plan into a more engaging and functional tool, making it easier to track progress and plan ahead. -->
+    <!-- Visualization & Content Choices: 
+        1. Weekly Mileage -> Goal: Show Change -> Viz: Bar Chart -> Interaction: Hover for details -> Justification: Visually represents the training build-up and taper phases much more effectively than text. -> Library: Chart.js (Canvas).
+        2. Key Stats (Longest Run, Total Miles) -> Goal: Inform/Summarize -> Viz: Stat Cards -> Interaction: None -> Justification: Provides quick, at-a-glance metrics of the overall plan. -> Library/Method: HTML/Tailwind.
+        3. Weekly Runs -> Goal: Organize/Inform -> Viz: Interactive Tabs/Buttons -> Interaction: Click to show/hide details -> Justification: Prevents information overload by chunking the plan into digestible weekly segments. Focuses user attention. -> Library/Method: JS DOM Manipulation + HTML/Tailwind. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .active-week {
+            background-color: #0d9488 !important; /* teal-600 */
+            color: white !important;
+            border-color: #0d9488 !important;
+        }
+        .run-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            color: white;
+        }
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-teal-700">Half Marathon Training Plan</h1>
+            <p class="text-lg md:text-xl text-stone-600 mt-2">Your 14-Week Journey to a 1:45 Finish</p>
+        </header>
+
+        <main>
+            <section id="overview" class="mb-8 md:mb-12">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h2 class="text-xl md:text-2xl font-semibold mb-2 text-stone-700">Weekly Mileage Progression</h2>
+                     <p class="text-stone-500 mb-6">This chart visualizes your total running distance each week, showing the build-up of training volume and the taper period before the race. Hover over a bar to see the exact mileage for that week.</p>
+                    <div class="chart-container">
+                        <canvas id="mileageChart"></canvas>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="key-stats" class="mb-8 md:mb-12">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 text-center">
+                        <h3 class="text-lg font-semibold text-stone-600 mb-2">Goal Time</h3>
+                        <p class="text-3xl font-bold text-teal-600">1:45:00</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 text-center">
+                        <h3 class="text-lg font-semibold text-stone-600 mb-2">Goal Pace</h3>
+                        <p class="text-3xl font-bold text-teal-600">8:00/mi</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 text-center">
+                        <h3 class="text-lg font-semibold text-stone-600 mb-2">Longest Run</h3>
+                        <p id="longestRun" class="text-3xl font-bold text-teal-600">-- mi</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200 text-center">
+                        <h3 class="text-lg font-semibold text-stone-600 mb-2">Total Miles</h3>
+                        <p id="totalMiles" class="text-3xl font-bold text-teal-600">--</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="weekly-plan">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h2 class="text-xl md:text-2xl font-semibold mb-2 text-stone-700">Weekly Schedule</h2>
+                    <p class="text-stone-500 mb-6">Select a week to view your detailed running schedule. The current week is highlighted. Use this section to focus on your upcoming workouts and plan your week accordingly.</p>
+                    <div id="week-selector" class="flex flex-wrap gap-2 mb-6">
+                    </div>
+                    <div id="week-details" class="bg-stone-50 p-6 rounded-lg border border-stone-200 min-h-[200px]">
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-12 text-stone-500">
+            <p>Good luck with your training!</p>
+        </footer>
+    </div>
+
+    <script>
+        const trainingData = [
+            { week: 2, runs: [{ type: 'Easy Run', distance: 4 }, { type: 'Goal Pace Run', distance: 2, pace: '8:00/mile' }, { type: 'Long Run', distance: 5 }] },
+            { week: 3, runs: [{ type: 'Easy Run', distance: 4 }, { type: 'Goal Pace Run', distance: 3, pace: '8:00/mile' }, { type: 'Long Run', distance: 6 }] },
+            { week: 4, runs: [{ type: 'Easy Run', distance: 5 }, { type: 'Tempo Run', distance: 4 }, { type: 'Long Run', distance: 7 }] },
+            { week: 5, runs: [{ type: 'Easy Run', distance: 5 }, { type: 'Goal Pace Run', distance: 4, pace: '8:00/mile' }, { type: 'Long Run', distance: 8 }] },
+            { week: 6, runs: [{ type: 'Easy Run', distance: 6 }, { type: 'Tempo Run', distance: 5 }, { type: 'Long Run', distance: 9 }] },
+            { week: 7, runs: [{ type: 'Easy Run', distance: 6 }, { type: 'Goal Pace Run', distance: 5, pace: '8:00/mile' }, { type: 'Long Run', distance: 10 }] },
+            { week: 8, runs: [{ type: 'Easy Run', distance: 7 }, { type: 'Tempo Run', distance: 4 }, { type: 'Long Run', distance: 10 }] },
+            { week: 9, runs: [{ type: 'Easy Run', distance: 7 }, { type: 'Goal Pace Run', distance: 6, pace: '8:00/mile' }, { type: 'Long Run', distance: 11 }] },
+            { week: 10, runs: [{ type: 'Easy Run', distance: 8 }, { type: 'Tempo Run', distance: 5 }, { type: 'Long Run', distance: 12 }] },
+            { week: 11, runs: [{ type: 'Easy Run', distance: 7 }, { type: 'Goal Pace Run', distance: 4, pace: '8:00/mile' }, { type: 'Long Run', distance: 10 }] },
+            { week: 12, runs: [{ type: 'Easy Run', distance: 5 }, { type: 'Tempo Run', distance: 3 }, { type: 'Long Run', distance: 8 }] },
+            { week: 13, runs: [{ type: 'Easy Run', distance: 4 }, { type: 'Goal Pace Run', distance: 2, pace: '8:00/mile' }, { type: 'Long Run', distance: 5 }] },
+            { week: 14, runs: [{ type: 'Easy Run', distance: 3 }, { type: 'Rest' }, { type: 'Easy Run', distance: 2 }, { type: 'Rest' }, { type: 'Race Day', distance: 13.1 }] },
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const weeklyTotals = trainingData.map(week => week.runs.reduce((sum, run) => sum + (run.distance || 0), 0));
+            const weekLabels = trainingData.map(week => `Week ${week.week}`);
+
+            const ctx = document.getElementById('mileageChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: weekLabels,
+                    datasets: [{
+                        label: 'Total Miles',
+                        data: weeklyTotals,
+                        backgroundColor: 'rgba(13, 148, 136, 0.6)', /* teal-600 with opacity */
+                        borderColor: 'rgba(15, 118, 110, 1)', /* teal-700 */
+                        borderWidth: 1,
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#e7e5e4' /* stone-200 */
+                            },
+                            ticks: {
+                                color: '#78716c' /* stone-500 */
+                            },
+                             title: {
+                                display: true,
+                                text: 'Miles',
+                                color: '#57534e' /* stone-600 */
+                            }
+                        },
+                        x: {
+                             grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#78716c' /* stone-500 */
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#44403c', /* stone-700 */
+                            titleFont: { weight: 'bold' },
+                            callbacks: {
+                                label: function(context) {
+                                    return `Total: ${context.parsed.y} miles`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const totalMiles = weeklyTotals.reduce((sum, miles) => sum + miles, 0).toFixed(1);
+            const longestRun = Math.max(...trainingData.flatMap(week => week.runs.map(run => run.distance || 0)));
+            document.getElementById('totalMiles').textContent = totalMiles;
+            document.getElementById('longestRun').textContent = `${longestRun} mi`;
+
+            const weekSelector = document.getElementById('week-selector');
+            trainingData.forEach((weekData, index) => {
+                const button = document.createElement('button');
+                button.textContent = `Week ${weekData.week}`;
+                button.dataset.weekIndex = index;
+                button.className = 'px-4 py-2 text-sm font-medium border border-stone-300 rounded-md hover:bg-teal-500 hover:text-white transition-colors duration-200';
+                if (index === 0) {
+                    button.classList.add('active-week');
+                }
+                weekSelector.appendChild(button);
+            });
+
+            const weekDetailsContainer = document.getElementById('week-details');
+            
+            function displayWeekDetails(weekIndex) {
+                const weekData = trainingData[weekIndex];
+                let html = `<h3 class="text-lg font-bold mb-4 text-teal-700">Plan for Week ${weekData.week}</h3>`;
+                html += '<ul class="space-y-4">';
+                
+                const iconMap = {
+                    'Easy Run': { icon: '👟', color: 'bg-blue-500' },
+                    'Tempo Run': { icon: '💨', color: 'bg-orange-500' },
+                    'Goal Pace Run': { icon: '🎯', color: 'bg-green-500' },
+                    'Long Run': { icon: '🏃‍♂️', color: 'bg-purple-500' },
+                    'Rest': { icon: '😴', color: 'bg-gray-500' },
+                    'Race Day': { icon: '🏁', color: 'bg-red-500' },
+                };
+
+                weekData.runs.forEach(run => {
+                    const iconInfo = iconMap[run.type] || { icon: '🏃', color: 'bg-stone-500' };
+                    html += `
+                        <li class="flex items-center gap-4">
+                            <div class="run-icon ${iconInfo.color}">${iconInfo.icon}</div>
+                            <div>
+                                <p class="font-semibold text-stone-800">${run.type}</p>
+                                ${run.distance ? `<p class="text-stone-600">${run.distance} miles ${run.pace ? `at ${run.pace}` : ''}</p>` : ''}
+                            </div>
+                        </li>
+                    `;
+                });
+                html += '</ul>';
+                weekDetailsContainer.innerHTML = html;
+            }
+
+            weekSelector.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const allButtons = weekSelector.querySelectorAll('button');
+                    allButtons.forEach(btn => btn.classList.remove('active-week'));
+                    e.target.classList.add('active-week');
+                    const weekIndex = e.target.dataset.weekIndex;
+                    displayWeekDetails(weekIndex);
+                }
+            });
+
+            displayWeekDetails(0);
+        });
+    </script>
+</body>
+</html>
