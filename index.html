@@ -12,7 +12,7 @@
     <!-- Application Structure Plan: A single-page dashboard structure was chosen for its clarity and ease of use. It starts with a high-level visual summary (weekly mileage chart and key stats cards) to give an immediate sense of the training load and progression. Below this, an interactive, tab-based weekly detail view allows the user to drill down into specific workouts without being overwhelmed by a long list. This "overview first, then details on demand" approach transforms the static text plan into a more engaging and functional tool, making it easier to track progress and plan ahead. -->
     <!-- Visualization & Content Choices: 
         1. Weekly Mileage -> Goal: Show Change -> Viz: Bar Chart -> Interaction: Hover for details -> Justification: Visually represents the training build-up and taper phases much more effectively than text. -> Library: Chart.js (Canvas).
-        2. Key Stats (Longest Run, Total Miles) -> Goal: Inform/Summarize -> Viz: Stat Cards -> Interaction: None -> Justification: Provides quick, at-a-glance metrics of the overall plan. -> Library/Method: HTML/Tailwind.
+        2. Key Stats (Longest Run, Total Miles) -> Goal: Inform/Summarize -> Viz: Stat Cards -> Interaction: None -> Justification: Provides quick, at-a-ance metrics of the overall plan. -> Library/Method: HTML/Tailwind.
         3. Weekly Runs -> Goal: Organize/Inform -> Viz: Interactive Tabs/Buttons -> Interaction: Click to show/hide details -> Justification: Prevents information overload by chunking the plan into digestible weekly segments. Focuses user attention. -> Library/Method: JS DOM Manipulation + HTML/Tailwind. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -54,7 +54,7 @@
     <div class="container mx-auto p-4 md:p-8 max-w-7xl">
         <header class="text-center mb-8 md:mb-12">
             <h1 class="text-3xl md:text-4xl font-bold text-teal-700">Half Marathon Training Plan</h1>
-            <p class="text-lg md:text-xl text-stone-600 mt-2">14-Week Journey to a 1:45 Finish</p>
+            <p class="text-lg md:text-xl text-stone-600 mt-2">Your 14-Week Journey to a 1:45 Finish</p>
         </header>
 
         <main>
@@ -88,7 +88,7 @@
                 </div>
             </section>
 
-            <section id="weekly-plan">
+            <section id="weekly-plan" class="mb-8 md:mb-12">
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
                     <h2 class="text-xl md:text-2xl font-semibold mb-2 text-stone-700">Weekly Schedule</h2>
                     <div id="week-selector" class="flex flex-wrap gap-2 mb-6">
@@ -97,10 +97,54 @@
                     </div>
                 </div>
             </section>
+
+            <section id="run-types" class="mb-8 md:mb-12">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h2 class="text-xl md:text-2xl font-semibold mb-4 text-stone-700">Understanding Your Runs</h2>
+                    <div class="space-y-6">
+                        <div class="flex items-start gap-4">
+                            <div class="run-icon bg-blue-500">👟</div>
+                            <div>
+                                <h3 class="font-bold text-lg text-stone-800">Easy Run</h3>
+                                <p class="text-stone-600">A run at a relaxed, conversational pace. This builds aerobic base and aids in recovery. Typically in Zone 2.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="run-icon bg-orange-500">💨</div>
+                            <div>
+                                <h3 class="font-bold text-lg text-stone-800">Tempo Run</h3>
+                                <p class="text-stone-600">A sustained, "comfortably hard" effort. This run improves lactate threshold, allowing to run faster for longer periods of time. Typically in Zone 3.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="run-icon bg-green-500">🎯</div>
+                            <div>
+                                <h3 class="font-bold text-lg text-stone-800">Goal Pace Run</h3>
+                                <p class="text-stone-600">Running at target race pace. Trains body and mind to get comfortable and efficient at the speed wanted to run on race day. Typically in Zone 3 to Zone 4.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="run-icon bg-purple-500">🏃‍♂️</div>
+                            <div>
+                                <h3 class="font-bold text-lg text-stone-800">Long Run</h3>
+                                <p class="text-stone-600">The most important run of the week. Done at an easy pace to build endurance and mental toughness, preparing for the full distance of the race. These are done in Zone 2.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="run-icon bg-gray-500">😴</div>
+                            <div>
+                                <h3 class="font-bold text-lg text-stone-800">Rest</h3>
+                                <p class="text-stone-600">Rest days are just as important as running days. They allow body to recover, repair muscles, and prevent injury.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
         </main>
 
         <footer class="text-center mt-12 text-stone-500">
-            <p>Good luck with your training!</p>
+            <p>You got this!</p>
         </footer>
     </div>
 
@@ -118,7 +162,8 @@
             { week: 11, runs: [{ type: 'Easy Run', distance: 7 }, { type: 'Goal Pace Run', distance: 4, pace: '8:00/mile' }, { type: 'Long Run', distance: 10 }] },
             { week: 12, runs: [{ type: 'Easy Run', distance: 5 }, { type: 'Tempo Run', distance: 3 }, { type: 'Long Run', distance: 8 }] },
             { week: 13, runs: [{ type: 'Easy Run', distance: 4 }, { type: 'Goal Pace Run', distance: 2, pace: '8:00/mile' }, { type: 'Long Run', distance: 5 }] },
-            { week: 14, runs: [{ type: 'Easy Run', distance: 3 }, { type: 'Rest' }, { type: 'Easy Run', distance: 2 }, { type: 'Rest' }, { type: 'Race Day', distance: 13.1 }] },
+            { week: 14, runs: [{ type: 'Easy Run', distance: 3 }, { type: 'Rest' }, { type: 'Easy Run', distance: 2 }, { type: 'Rest' }, { type: 'Easy Run', distance: 1 }] },
+            { week: 15, runs: [{ type: 'Easy Run', distance: 2 }, { type: 'Rest' }, { type: 'Easy Run', distance: 1 }, { type: 'Rest' }, { type: 'Race Day', distance: 13.1 }] },
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -189,12 +234,13 @@
             document.getElementById('longestRun').textContent = `${longestRun} mi`;
 
             const weekSelector = document.getElementById('week-selector');
+            weekSelector.innerHTML = '';
             trainingData.forEach((weekData, index) => {
                 const button = document.createElement('button');
                 button.textContent = `Week ${weekData.week}`;
                 button.dataset.weekIndex = index;
                 button.className = 'px-4 py-2 text-sm font-medium border border-stone-300 rounded-md hover:bg-teal-500 hover:text-white transition-colors duration-200';
-                if (index === 0) {
+                if (weekData.week === 2) {
                     button.classList.add('active-week');
                 }
                 weekSelector.appendChild(button);
